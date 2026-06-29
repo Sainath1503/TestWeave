@@ -1,0 +1,621 @@
+[
+  {
+    "executedAt": 1781718486969,
+    "totalTestCases": 1,
+    "reportPath": "TestSuites\\Reports\\FoodHub_API__DB__and_E2E_Test_Suite-report-1781718486969.html",
+    "name": "FoodHub_API__DB__and_E2E_Test_Suite",
+    "totalSteps": 1,
+    "health": "At risk",
+    "details": [{
+      "suite": "FoodHub API, DB, and E2E Test Suite",
+      "testStep": "Navigate to homepage and verify menu loads",
+      "message": "Imported from HTML report",
+      "type": "Web Test",
+      "status": "Stopped",
+      "testCase": "E2E Order Flow \u2013 Web Test"
+    }],
+    "failed": 1,
+    "id": "import-suite-FoodHub_API__DB__and_E2E_Test_Suite-report-1781718486969_html",
+    "passed": 0,
+    "passPercentage": 0,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1781718662671,
+    "totalTestCases": 1,
+    "reportPath": "TestSuites\\Reports\\FoodHub_API__DB__and_E2E_Test_Suite-report-1781718662670.html",
+    "name": "FoodHub_API__DB__and_E2E_Test_Suite",
+    "totalSteps": 1,
+    "health": "At risk",
+    "details": [{
+      "suite": "FoodHub API, DB, and E2E Test Suite",
+      "testStep": "Navigate to homepage and verify menu loads",
+      "message": "Imported from HTML report",
+      "type": "Web Test",
+      "status": "Failed (6 failed)",
+      "testCase": "E2E Order Flow \u2013 Web Test"
+    }],
+    "failed": 1,
+    "id": "import-suite-FoodHub_API__DB__and_E2E_Test_Suite-report-1781718662670_html",
+    "passed": 0,
+    "passPercentage": 0,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1781716876252,
+    "totalTestCases": 5,
+    "reportPath": "TestSuites\\Reports\\FoodHub_Full_Stack_Test_Suite-report-1781716876249.html",
+    "name": "FoodHub_Full_Stack_Test_Suite",
+    "totalSteps": 5,
+    "health": "At risk",
+    "details": [
+      {
+        "suite": "FoodHub Full Stack Test Suite",
+        "testStep": "GET /health",
+        "message": "Imported from HTML report",
+        "type": "DB Validation",
+        "status": "Failed",
+        "testCase": "Health Check API"
+      },
+      {
+        "suite": "FoodHub Full Stack Test Suite",
+        "testStep": "GET /menu",
+        "message": "Imported from HTML report",
+        "type": "DB Validation",
+        "status": "Failed: Path segment is not an array: [0]",
+        "testCase": "Get Menu API"
+      },
+      {
+        "suite": "FoodHub Full Stack Test Suite",
+        "testStep": "POST /order",
+        "message": "Imported from HTML report",
+        "type": "DB Validation",
+        "status": "Failed: Response field not found: orderId",
+        "testCase": "Create Order with DB Validation"
+      },
+      {
+        "suite": "FoodHub Full Stack Test Suite",
+        "testStep": "Validate orders table structure",
+        "message": "Imported from HTML report",
+        "type": "DB Validation",
+        "status": "Passed",
+        "testCase": "Direct DB Query - Orders Table"
+      },
+      {
+        "suite": "FoodHub Full Stack Test Suite",
+        "testStep": "Navigate to home and view menu",
+        "message": "Imported from HTML report",
+        "type": "Web Test",
+        "status": "Failed (5 failed)",
+        "testCase": "E2E - Menu and Order Flow"
+      }
+    ],
+    "failed": 4,
+    "id": "import-suite-FoodHub_Full_Stack_Test_Suite-report-1781716876249_html",
+    "passed": 1,
+    "passPercentage": 20,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1781717127097,
+    "totalTestCases": 1,
+    "reportPath": "TestSuites\\Reports\\FoodHub_Full_Stack_Test_Suite-report-1781717127097.html",
+    "name": "FoodHub_Full_Stack_Test_Suite",
+    "totalSteps": 1,
+    "health": "At risk",
+    "details": [{
+      "suite": "FoodHub Full Stack Test Suite",
+      "testStep": "Navigate to home and view menu",
+      "message": "Imported from HTML report",
+      "type": "Web Test",
+      "status": "Stopped",
+      "testCase": "E2E - Menu and Order Flow"
+    }],
+    "failed": 1,
+    "id": "import-suite-FoodHub_Full_Stack_Test_Suite-report-1781717127097_html",
+    "passed": 0,
+    "passPercentage": 0,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1781719891666,
+    "totalTestCases": 1,
+    "reportPath": "TestSuites\\Reports\\FoodHub_Project_-_API__DB__and_E2E_Tests-report-1781719891663.html",
+    "name": "FoodHub_Project_-_API__DB__and_E2E_Tests",
+    "totalSteps": 2,
+    "health": "At risk",
+    "details": [
+      {
+        "suite": "FoodHub Project - API, DB, and E2E Tests",
+        "testStep": "Health check endpoint returns 200",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Failed",
+        "testCase": "API and DB Validation"
+      },
+      {
+        "suite": "FoodHub Project - API, DB, and E2E Tests",
+        "testStep": "Retrieve menu items",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Failed: Path segment is not an array: [0]",
+        "testCase": "API and DB Validation"
+      }
+    ],
+    "failed": 2,
+    "id": "import-suite-FoodHub_Project_-_API__DB__and_E2E_Tests-report-1781719891663_html",
+    "passed": 0,
+    "passPercentage": 0,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1782046109552,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\Perfomance_Reports\\load-test-20260621-181825-60d90781\\index.html",
+    "totalSteps": 100,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "p99Ms": 724.079999999999,
+      "p95Ms": 483.84999999999997,
+      "throughputPerSecond": 23.44116268166901,
+      "p90Ms": 463,
+      "averageMs": 417.30999999999995,
+      "errors": 0,
+      "samples": 100
+    },
+    "totalTestCases": 1,
+    "name": "load-test-20260621-181825-60d90781",
+    "details": [{
+      "suite": "Performance",
+      "testStep": "load-test-20260621-181825-60d90781",
+      "message": "100 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "import-performance-load-test-20260621-181825-60d90781",
+    "passed": 100,
+    "passPercentage": 100
+  },
+  {
+    "executedAt": 1782045790400,
+    "reportPath": "target\\performance-reports\\load-test-20260621-181308-a3996829\\index.html",
+    "totalSteps": 50,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "p99Ms": 289,
+      "p95Ms": 256.84999999999997,
+      "throughputPerSecond": 23.980815347721823,
+      "p90Ms": 248.2,
+      "averageMs": 197.12,
+      "errors": 0,
+      "samples": 50
+    },
+    "totalTestCases": 1,
+    "name": "load-test-20260621-181308-a3996829",
+    "details": [{
+      "suite": "Performance",
+      "testStep": "load-test-20260621-181308-a3996829",
+      "message": "50 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "import-performance-load-test-20260621-181308-a3996829",
+    "passed": 50,
+    "passPercentage": 100
+  },
+  {
+    "executedAt": 1782564439860,
+    "totalTestCases": 1,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\TestSuite_Reports\\TestSuite1-report-1782564439857.html",
+    "name": "TestSuite1",
+    "totalSteps": 2,
+    "health": "Excellent",
+    "details": [
+      {
+        "suite": "TestSuite1",
+        "testStep": "Bookname API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "testStep": "AddBook API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      }
+    ],
+    "failed": 0,
+    "id": "import-suite-TestSuite1-report-1782564439857_html",
+    "passed": 2,
+    "passPercentage": 100,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1781802980574,
+    "reportPath": "target\\performance-reports\\load-test-20260618-224613-5d49673e\\index.html",
+    "totalSteps": 50,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "p99Ms": 437,
+      "p95Ms": 429.79999999999995,
+      "throughputPerSecond": 21.929824561403507,
+      "p90Ms": 318.7,
+      "averageMs": 221.43999999999997,
+      "errors": 0,
+      "samples": 50
+    },
+    "totalTestCases": 1,
+    "name": "load-test-20260618-224613-5d49673e",
+    "details": [{
+      "suite": "Performance",
+      "testStep": "load-test-20260618-224613-5d49673e",
+      "message": "50 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "import-performance-load-test-20260618-224613-5d49673e",
+    "passed": 50,
+    "passPercentage": 100
+  },
+  {
+    "executedAt": 1782045733498,
+    "reportPath": "target\\performance-reports\\load-test-20260621-181206-fcd8b407\\index.html",
+    "totalSteps": 50,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "p99Ms": 389,
+      "p95Ms": 333.29999999999995,
+      "throughputPerSecond": 22.946305644791188,
+      "p90Ms": 281.3,
+      "averageMs": 210.04,
+      "errors": 0,
+      "samples": 50
+    },
+    "totalTestCases": 1,
+    "name": "load-test-20260621-181206-fcd8b407",
+    "details": [{
+      "suite": "Performance",
+      "testStep": "load-test-20260621-181206-fcd8b407",
+      "message": "50 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "import-performance-load-test-20260621-181206-fcd8b407",
+    "passed": 50,
+    "passPercentage": 100
+  },
+  {
+    "executedAt": 1782564439862,
+    "totalTestCases": 1,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\TestSuite_Reports\\TestSuite1-report-1782564439857.html",
+    "name": "TestSuite1",
+    "totalSteps": 2,
+    "health": "Excellent",
+    "details": [
+      {
+        "suite": "TestSuite1",
+        "passed": true,
+        "testStep": "Bookname API Field Validation",
+        "validations": [
+          {
+            "actual": "RestAssured SBA Assesment",
+            "field": "$[0].book_name",
+            "expected": "",
+            "passed": true,
+            "message": "",
+            "validation": "Null: Not Null, Type: string"
+          },
+          {
+            "actual": "RestAssured SBA Assesment2",
+            "field": "$[1].book_name",
+            "expected": "",
+            "passed": true,
+            "message": "",
+            "validation": "Null: Not Null, Type: string"
+          },
+          {
+            "actual": "Learn Appium Automation with Java 2",
+            "field": "$[2].book_name",
+            "expected": "",
+            "passed": true,
+            "message": "",
+            "validation": "Null: Not Null, Type: string"
+          }
+        ],
+        "message": "",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "passed": true,
+        "testStep": "AddBook API Field Validation",
+        "validations": [{
+          "actual": "Book Already Exists",
+          "field": "$.Msg",
+          "expected": "",
+          "passed": true,
+          "message": "",
+          "validation": "Null: Not Null, Type: string"
+        }],
+        "message": "",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      }
+    ],
+    "failed": 0,
+    "id": "suite-1782564439860-c4ada19e-943a-487c-ae69-a7451a949324",
+    "passed": 2,
+    "passPercentage": 100,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1782047236518,
+    "reportPath": "C:\\Users\\sai93\\api-validator\\target\\reports\\Perfomance_Reports\\load-test-20260621-183709-86cacbb9\\index.html",
+    "totalSteps": 50,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "p99Ms": 282,
+      "p95Ms": 258.59999999999997,
+      "throughputPerSecond": 23.730422401518748,
+      "p90Ms": 251.29999999999998,
+      "averageMs": 200.16000000000005,
+      "errors": 0,
+      "samples": 50
+    },
+    "totalTestCases": 1,
+    "name": "load-test-20260621-183709-86cacbb9",
+    "details": [{
+      "suite": "Performance",
+      "testStep": "load-test-20260621-183709-86cacbb9",
+      "message": "50 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "import-performance-load-test-20260621-183709-86cacbb9",
+    "passed": 50,
+    "passPercentage": 100
+  },
+  {
+    "executedAt": 1782564447243,
+    "totalTestCases": 1,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\TestSuite_Reports\\TestSuite1-report-1782564447242.html",
+    "name": "TestSuite1",
+    "totalSteps": 2,
+    "health": "Excellent",
+    "details": [
+      {
+        "suite": "TestSuite1",
+        "passed": true,
+        "testStep": "Bookname API Field Validation",
+        "validations": [
+          {
+            "actual": "RestAssured SBA Assesment",
+            "field": "$[0].book_name",
+            "expected": "",
+            "passed": true,
+            "message": "",
+            "validation": "Null: Not Null, Type: string"
+          },
+          {
+            "actual": "RestAssured SBA Assesment2",
+            "field": "$[1].book_name",
+            "expected": "",
+            "passed": true,
+            "message": "",
+            "validation": "Null: Not Null, Type: string"
+          },
+          {
+            "actual": "Learn Appium Automation with Java 2",
+            "field": "$[2].book_name",
+            "expected": "",
+            "passed": true,
+            "message": "",
+            "validation": "Null: Not Null, Type: string"
+          }
+        ],
+        "message": "",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "passed": true,
+        "testStep": "AddBook API Field Validation",
+        "validations": [{
+          "actual": "Book Already Exists",
+          "field": "$.Msg",
+          "expected": "",
+          "passed": true,
+          "message": "",
+          "validation": "Null: Not Null, Type: string"
+        }],
+        "message": "",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      }
+    ],
+    "failed": 0,
+    "id": "suite-1782564447243-a4fe457f-5071-4f25-b51a-013ceb4b937e",
+    "passed": 2,
+    "passPercentage": 100,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1782046109982,
+    "totalTestCases": 1,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\TestSuite_Reports\\TestSuite1-report-1782046109976.html",
+    "name": "TestSuite1",
+    "totalSteps": 5,
+    "health": "Watch",
+    "details": [
+      {
+        "suite": "TestSuite1",
+        "testStep": "Bookname API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "testStep": "AddBook API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "testStep": "AddBookRandom API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "testStep": "JSONCompareGET",
+        "message": "Imported from HTML report",
+        "type": "JSON Compare",
+        "status": "Failed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "testStep": "TestCase1 Performance Test",
+        "message": "Imported from HTML report",
+        "type": "Performance Test",
+        "status": "Passed (100 samples)",
+        "testCase": "TestCase1"
+      }
+    ],
+    "failed": 1,
+    "id": "import-suite-TestSuite1-report-1782046109976_html",
+    "passed": 4,
+    "passPercentage": 80,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1782564447243,
+    "totalTestCases": 1,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\TestSuite_Reports\\TestSuite1-report-1782564447242.html",
+    "name": "TestSuite1",
+    "totalSteps": 2,
+    "health": "Excellent",
+    "details": [
+      {
+        "suite": "TestSuite1",
+        "testStep": "Bookname API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      },
+      {
+        "suite": "TestSuite1",
+        "testStep": "AddBook API Field Validation",
+        "message": "Imported from HTML report",
+        "type": "Field Validation",
+        "status": "Passed",
+        "testCase": "TestCase1"
+      }
+    ],
+    "failed": 0,
+    "id": "import-suite-TestSuite1-report-1782564447242_html",
+    "passed": 2,
+    "passPercentage": 100,
+    "type": "TEST_SUITE"
+  },
+  {
+    "executedAt": 1782047236803,
+    "reportPath": "C:\\Users\\sai93\\api-validator\\target\\reports\\Perfomance_Reports\\load-test-20260621-183709-86cacbb9\\index.html",
+    "totalSteps": 50,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "requestCapturePath": "",
+      "method": "GET",
+      "maxMs": 282,
+      "minMs": 128,
+      "p90Ms": 247,
+      "threads": 5,
+      "samples": 50,
+      "endpoint": "http://216.10.245.166/Library/GetBook.php?AuthorName=Sainath",
+      "p99Ms": 261,
+      "iterationsPerThread": 10,
+      "p95Ms": 261,
+      "throughputPerSecond": 23.730422401518744,
+      "durationMs": 6620,
+      "averageMs": 200,
+      "errors": 0,
+      "medianMs": 203
+    },
+    "totalTestCases": 1,
+    "name": "Performance Load Test",
+    "details": [{
+      "suite": "Performance Load Test",
+      "testStep": "GET http://216.10.245.166/Library/GetBook.php?AuthorName=Sainath",
+      "message": "50 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "performance-1782047236802-a063f448-61aa-41ae-8b27-8dfbe7dbf092",
+    "passed": 50,
+    "passPercentage": 100
+  },
+  {
+    "executedAt": 1782046030298,
+    "reportPath": "D:\\TestWeaveConfig\\Reports\\Perfomance_Reports\\load-test-20260621-181703-262a2dc8\\index.html",
+    "totalSteps": 50,
+    "health": "Excellent",
+    "failed": 0,
+    "type": "PERFORMANCE",
+    "performance": {
+      "p99Ms": 273,
+      "p95Ms": 265.25,
+      "throughputPerSecond": 22.79981760145919,
+      "p90Ms": 256.5,
+      "averageMs": 207.41999999999996,
+      "errors": 0,
+      "samples": 50
+    },
+    "totalTestCases": 1,
+    "name": "load-test-20260621-181703-262a2dc8",
+    "details": [{
+      "suite": "Performance",
+      "testStep": "load-test-20260621-181703-262a2dc8",
+      "message": "50 samples; 0 errors",
+      "type": "Performance Test",
+      "status": "Passed",
+      "testCase": "Load Test"
+    }],
+    "id": "import-performance-load-test-20260621-181703-262a2dc8",
+    "passed": 50,
+    "passPercentage": 100
+  }
+]

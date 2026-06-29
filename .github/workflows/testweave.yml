@@ -1,0 +1,45 @@
+name: TestWeave Test Suite Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite_file:
+        description: Test suite workbook path
+        required: true
+        default: testweave/test-suite.xlsx
+      parallel:
+        description: Enable TestWeave parallel execution
+        required: true
+        default: 'false'
+      threads:
+        description: TestWeave thread count
+        required: true
+        default: '1'
+
+jobs:
+  testweave:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check TestWeave suite file
+        run: |
+          test -f "${{ inputs.suite_file }}"
+          ls -l "${{ inputs.suite_file }}"
+
+      - name: Run TestWeave suite in Docker Compose
+        env:
+          SUITE_FILE: ${{ inputs.suite_file }}
+          TESTWEAVE_PARALLEL: ${{ inputs.parallel }}
+          TESTWEAVE_THREADS: ${{ inputs.threads }}
+          TESTWEAVE_HTTP_TIMEOUT_MS: '60000'
+        run: |
+          trap 'docker compose -f docker-compose.testweave.yml down -v --remove-orphans' EXIT
+          docker compose -f docker-compose.testweave.yml up --build --abort-on-container-exit --exit-code-from testweave
+
+      - name: Upload TestWeave report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testweave-report
+          path: target/testweave-report/**

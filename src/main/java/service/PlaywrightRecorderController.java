@@ -6,12 +6,18 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.PlaywrightException;
+import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.LoadState;
+import com.microsoft.playwright.options.WaitForSelectorState;
 import model.WebTestCase;
 import model.WebTestExecutionResult;
 import model.WebTestRunReport;
 import model.WebTestStep;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -21,6 +27,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PlaywrightRecorderController {
 
@@ -688,6 +696,53 @@ public class PlaywrightRecorderController {
                     resolveLocator(runPage, step.selector).selectOption(step.value == null ? "" : step.value);
                     result.message = "Dropdown option selected";
                     break;
+                case "wait for visible":
+                    resolveLocator(runPage, step.selector).waitFor(new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(WaitForSelectorState.VISIBLE));
+                    result.message = "Element became visible";
+                    break;
+                case "wait for text":
+                    runPage.getByText(step.value == null ? "" : step.value).waitFor(new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(WaitForSelectorState.VISIBLE));
+                    result.message = "Text became visible";
+                    break;
+                case "wait for url":
+                    runPage.waitForURL(step.value == null ? "" : step.value);
+                    result.message = "URL matched";
+                    break;
+                case "wait for network idle":
+                    runPage.waitForLoadState(LoadState.NETWORKIDLE);
+                    result.message = "Network became idle";
+                    break;
+                case "assert element visible":
+                    if (!resolveLocator(runPage, step.selector).first().isVisible()) {
+                        throw new IllegalStateException("Element is not visible: " + step.selector);
+                    }
+                    result.message = "Element is visible";
+                    break;
+                case "assert url contains":
+                    String currentUrl = runPage.url();
+                    String expectedUrlPart = step.value == null ? "" : step.value;
+                    if (!currentUrl.contains(expectedUrlPart)) {
+                        throw new IllegalStateException("Expected URL to contain '" + expectedUrlPart
+                                + "'. Actual URL: " + currentUrl);
+                    }
+                    result.message = "URL assertion passed";
+                    break;
+                case "fill by label":
+                    runPage.getByLabel(step.selector == null || step.selector.isBlank() ? step.value : step.selector)
+                            .fill(step.value == null ? "" : step.value);
+                    result.message = "Text entered by label";
+                    break;
+                case "click by text":
+                    runPage.getByText(step.value == null ? "" : step.value).click();
+                    result.message = "Element clicked by text";
+                    break;
+                case "click by role":
+                    runPage.getByRole(parseAriaRole(step.selector), new Page.GetByRoleOptions()
+                            .setName(step.value == null ? "" : step.value)).click();
+                    result.message = "Element clicked by role";
+                    break;
                 case "validate text":
                     String actualText = resolveLocator(runPage, step.selector).innerText();
                     if (actualText == null || !actualText.contains(step.value == null ? "" : step.value)) {
@@ -707,6 +762,19 @@ public class PlaywrightRecorderController {
                     result.expectedValue = variableName;
                     result.message = "Saved text to ${" + variableName + "}";
                     break;
+                case "flow variable":
+                    String flowVariableName = normalizeVariableName(step.note);
+                    if (flowVariableName.isBlank()) {
+                        flowVariableName = normalizeVariableName(step.value);
+                    }
+                    if (flowVariableName.isBlank()) {
+                        throw new IllegalArgumentException("Enter a variable name in Note for Flow Variable.");
+                    }
+                    result.capturedVariableName = flowVariableName;
+                    result.capturedVariableValue = step.value == null ? "" : step.value;
+                    result.expectedValue = step.value == null ? "" : step.value;
+                    result.message = "Saved flow variable ${" + flowVariableName + "}";
+                    break;
                 case "screenshot":
                     String baseName = safe(step.value).isBlank() ? "screenshot-" + Instant.now().toEpochMilli() + ".png" : step.value;
                     if (!baseName.toLowerCase().endsWith(".png")) {
@@ -716,6 +784,38 @@ public class PlaywrightRecorderController {
                     runPage.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
                     report.lastScreenshotPath = screenshotPath;
                     result.message = "Screenshot captured";
+                    break;
+                case "visual baseline":
+                    Path baselinePath = resolveVisualPath(step.value, "baseline-" + Instant.now().toEpochMilli() + ".png");
+                    Files.createDirectories(baselinePath.toAbsolutePath().getParent());
+                    captureVisualScreenshot(runPage, step.selector, baselinePath);
+                    report.lastScreenshotPath = baselinePath;
+                    result.message = "Visual baseline captured: " + baselinePath.toAbsolutePath();
+                    break;
+                case "visual compare":
+                    Path expectedPath = resolveVisualPath(step.value, "baseline-" + Instant.now().toEpochMilli() + ".png");
+                    Files.createDirectories(expectedPath.toAbsolutePath().getParent());
+                    if (!Files.exists(expectedPath)) {
+                        captureVisualScreenshot(runPage, step.selector, expectedPath);
+                        report.lastScreenshotPath = expectedPath;
+                        result.message = "Visual baseline did not exist; created baseline: " + expectedPath.toAbsolutePath();
+                        break;
+                    }
+                    Path actualPath = screenshotDir.resolve("visual-actual-" + Instant.now().toEpochMilli() + ".png");
+                    captureVisualScreenshot(runPage, step.selector, actualPath);
+                    report.lastScreenshotPath = actualPath;
+                    VisualComparison comparison = compareImages(expectedPath, actualPath, screenshotDir);
+                    double threshold = visualThreshold(step.note);
+                    if (comparison.diffRatio > threshold) {
+                        throw new IllegalStateException("Visual difference "
+                                + String.format("%.4f", comparison.diffRatio)
+                                + " exceeded threshold " + String.format("%.4f", threshold)
+                                + ". Actual: " + actualPath.toAbsolutePath()
+                                + ", Diff: " + comparison.diffPath.toAbsolutePath());
+                    }
+                    result.message = "Visual comparison passed. Difference: "
+                            + String.format("%.4f", comparison.diffRatio)
+                            + ", threshold: " + String.format("%.4f", threshold);
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported web action: " + step.action);
@@ -728,6 +828,95 @@ public class PlaywrightRecorderController {
         }
         result.durationMs = System.currentTimeMillis() - start;
         return result;
+    }
+
+    private void captureVisualScreenshot(Page page, String selector, Path path) {
+        String target = safe(selector);
+        if (target.isBlank() || "page".equalsIgnoreCase(target)) {
+            page.screenshot(new Page.ScreenshotOptions().setPath(path));
+            return;
+        }
+        resolveLocator(page, target).screenshot(new com.microsoft.playwright.Locator.ScreenshotOptions().setPath(path));
+    }
+
+    private Path resolveVisualPath(String value, String fallbackName) {
+        String raw = safe(value).isBlank() ? fallbackName : safe(value);
+        if (!raw.toLowerCase().endsWith(".png")) {
+            raw = raw + ".png";
+        }
+        Path path = Path.of(raw);
+        return path.isAbsolute() ? path.normalize() : path.toAbsolutePath().normalize();
+    }
+
+    private double visualThreshold(String note) {
+        Matcher matcher = Pattern.compile("threshold\\s*=\\s*([0-9]*\\.?[0-9]+)", Pattern.CASE_INSENSITIVE)
+                .matcher(safe(note));
+        if (!matcher.find()) {
+            return 0.01;
+        }
+        try {
+            return Math.max(0.0, Math.min(1.0, Double.parseDouble(matcher.group(1))));
+        } catch (NumberFormatException e) {
+            return 0.01;
+        }
+    }
+
+    private VisualComparison compareImages(Path expectedPath, Path actualPath, Path outputDirectory) throws Exception {
+        BufferedImage expected = ImageIO.read(expectedPath.toFile());
+        BufferedImage actual = ImageIO.read(actualPath.toFile());
+        if (expected == null || actual == null) {
+            throw new IllegalArgumentException("Visual comparison requires readable PNG images.");
+        }
+        int width = Math.max(expected.getWidth(), actual.getWidth());
+        int height = Math.max(expected.getHeight(), actual.getHeight());
+        BufferedImage diff = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        long different = 0;
+        long total = (long) width * height;
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                boolean inExpected = x < expected.getWidth() && y < expected.getHeight();
+                boolean inActual = x < actual.getWidth() && y < actual.getHeight();
+                int expectedRgb = inExpected ? expected.getRGB(x, y) : Color.MAGENTA.getRGB();
+                int actualRgb = inActual ? actual.getRGB(x, y) : Color.CYAN.getRGB();
+                if (expectedRgb == actualRgb) {
+                    diff.setRGB(x, y, actualRgb);
+                } else {
+                    different++;
+                    diff.setRGB(x, y, Color.RED.getRGB());
+                }
+            }
+        }
+
+        Path diffPath = outputDirectory.resolve("visual-diff-" + Instant.now().toEpochMilli() + ".png");
+        ImageIO.write(diff, "png", diffPath.toFile());
+        return new VisualComparison(total == 0 ? 0.0 : different / (double) total, diffPath);
+    }
+
+    private AriaRole parseAriaRole(String value) {
+        return switch (safe(value).toLowerCase().replace("_", " ").replace("-", " ")) {
+            case "alert" -> AriaRole.ALERT;
+            case "alertdialog", "alert dialog" -> AriaRole.ALERTDIALOG;
+            case "button" -> AriaRole.BUTTON;
+            case "checkbox" -> AriaRole.CHECKBOX;
+            case "combobox", "combo box" -> AriaRole.COMBOBOX;
+            case "dialog" -> AriaRole.DIALOG;
+            case "grid" -> AriaRole.GRID;
+            case "heading" -> AriaRole.HEADING;
+            case "img", "image" -> AriaRole.IMG;
+            case "link" -> AriaRole.LINK;
+            case "list" -> AriaRole.LIST;
+            case "listitem", "list item" -> AriaRole.LISTITEM;
+            case "menu" -> AriaRole.MENU;
+            case "menuitem", "menu item" -> AriaRole.MENUITEM;
+            case "option" -> AriaRole.OPTION;
+            case "radio" -> AriaRole.RADIO;
+            case "searchbox", "search box" -> AriaRole.SEARCHBOX;
+            case "tab" -> AriaRole.TAB;
+            case "table" -> AriaRole.TABLE;
+            case "textbox", "text box", "input" -> AriaRole.TEXTBOX;
+            default -> AriaRole.BUTTON;
+        };
     }
 
     private String enrichStepFailureMessage(Page runPage, WebTestStep step, String baseMessage) {
@@ -969,5 +1158,15 @@ public class PlaywrightRecorderController {
 
     private String safe(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private static class VisualComparison {
+        final double diffRatio;
+        final Path diffPath;
+
+        VisualComparison(double diffRatio, Path diffPath) {
+            this.diffRatio = diffRatio;
+            this.diffPath = diffPath;
+        }
     }
 }

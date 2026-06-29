@@ -42,12 +42,17 @@ public class PerformanceTestService {
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
     public PerformanceTestResult runLoadTest(ApiRequest request, int threads, int iterationsPerThread) throws Exception {
+        return runLoadTest(request, threads, iterationsPerThread, Path.of("target", "performance-reports"));
+    }
+
+    public PerformanceTestResult runLoadTest(ApiRequest request, int threads, int iterationsPerThread,
+                                             Path reportsRoot) throws Exception {
         validate(request, threads, iterationsPerThread);
 
         String method = request.method.trim().toUpperCase();
         String reportName = "load-test-" + REPORT_NAME_FORMAT.format(LocalDateTime.now())
                 + "-" + UUID.randomUUID().toString().substring(0, 8);
-        Path reportsRoot = Path.of("target", "performance-reports");
+        reportsRoot = reportsRoot.toAbsolutePath().normalize();
         Files.createDirectories(reportsRoot);
 
         Path reportDirectory = reportsRoot.resolve(reportName);
@@ -124,10 +129,11 @@ public class PerformanceTestService {
     }
 
     private DslHttpSampler buildSampler(ApiRequest request, String method) {
+        Duration timeout = Duration.ofMillis(httpTimeoutMs());
         DslHttpSampler sampler = httpSampler("API Load Request", request.url)
                 .method(method)
-                .connectionTimeout(Duration.ofSeconds(15))
-                .responseTimeout(Duration.ofSeconds(30))
+                .connectionTimeout(timeout)
+                .responseTimeout(timeout)
                 .header("User-Agent", "API-Validator-Tool/1.0");
 
         if (request.headers != null) {
@@ -219,6 +225,21 @@ public class PerformanceTestService {
 
     private boolean requiresBody(String method) {
         return "POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method);
+    }
+
+    private int httpTimeoutMs() {
+        String value = System.getProperty("testweave.http.timeout.ms");
+        if (value == null || value.isBlank()) {
+            value = System.getenv("TESTWEAVE_HTTP_TIMEOUT_MS");
+        }
+        if (value != null && !value.isBlank()) {
+            try {
+                return Math.max(1000, Integer.parseInt(value.trim()));
+            } catch (NumberFormatException ignored) {
+                return 60000;
+            }
+        }
+        return 60000;
     }
 
     private String applyRuntimePlaceholders(String body) {
