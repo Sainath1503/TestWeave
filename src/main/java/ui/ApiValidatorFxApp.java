@@ -70,6 +70,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
+import javafx.embed.swing.SwingNode;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
@@ -94,6 +95,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.kordamp.ikonli.javafx.FontIcon;
+import com.jediterm.core.util.TermSize;
+import com.jediterm.terminal.Questioner;
+import com.jediterm.terminal.TtyConnector;
+import com.jediterm.terminal.ui.JediTermWidget;
+import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
+import com.pty4j.PtyProcess;
+import com.pty4j.PtyProcessBuilder;
+import com.pty4j.WinSize;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.PolyglotException;
@@ -110,6 +119,9 @@ import service.ResponseVariableService;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
@@ -160,6 +172,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.swing.SwingUtilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -2738,12 +2751,14 @@ public class ApiValidatorFxApp extends Application {
 
         Button startHermes = secondary("Start Hermes CLI");
         startHermes.setOnAction(e -> startHermesAgentContainer());
+        Button embeddedHermes = secondary("Embedded Hermes CLI");
+        embeddedHermes.setOnAction(e -> startEmbeddedHermesCli());
         Button browserHermes = secondary("Launch Browser");
         browserHermes.setOnAction(e -> launchHermesAgentBrowser());
         Button stopHermes = secondary("Stop Hermes");
         stopHermes.setOnAction(e -> stopHermesAgentContainer());
 
-        FlowPane hermesControls = spacedActionRow(labeled("Session", hermesSessionBox), startHermes, browserHermes, stopHermes);
+        FlowPane hermesControls = spacedActionRow(labeled("Session", hermesSessionBox), startHermes, embeddedHermes, browserHermes, stopHermes);
         FlowPane manualSessionControls = spacedActionRow(labeled("Session ID", hermesManualSessionIdField), saveHermesSession);
         VBox logs = card("Logs", hermesLogArea);
         VBox panel = new VBox(14, labeled("AI Agent Path", hermesAiAgentPathField), hermesControls, manualSessionControls, logs);
@@ -10297,6 +10312,104 @@ public class ApiValidatorFxApp extends Application {
         start(task);
     }
 
+    private void startEmbeddedHermesCli() {
+        Task<EmbeddedHermesLaunch> task = new Task<>() {
+            @Override
+            protected EmbeddedHermesLaunch call() throws Exception {
+                String image = hermesDockerImage();
+                String containerName = hermesContainerName();
+                requireDocker(ApiValidatorFxApp.this::appendHermesLog);
+                ensureHermesContainerRunning(image, containerName, false);
+                verifyHermesAgent(containerName);
+                Path aiAgentPath = hermesDataDirectory();
+                List<String> dockerArgs = buildHermesDockerArgs(containerName, null);
+                return new EmbeddedHermesLaunch(containerName, aiAgentPath, dockerArgs);
+            }
+        };
+        task.setOnSucceeded(e -> showEmbeddedHermesTerminal(task.getValue()));
+        task.setOnFailed(e -> {
+            appendHermesLog("Embedded Hermes CLI failed: " + exceptionMessage(task.getException()));
+            showError("Embedded Hermes CLI Failed", task.getException());
+        });
+        start(task);
+    }
+
+    private void showEmbeddedHermesTerminal(EmbeddedHermesLaunch launch) {
+        if (launch == null) {
+            return;
+        }
+        Stage terminalStage = new Stage();
+        terminalStage.setTitle("TestWeave - Embedded Hermes CLI");
+        loadApplicationIcon(terminalStage);
+
+        SwingNode terminalNode = new SwingNode();
+        Label status = new Label("Starting embedded Hermes terminal...");
+        status.getStyleClass().add("muted");
+        Button close = secondary("Close Terminal");
+        close.setOnAction(e -> terminalStage.close());
+        BorderPane content = new BorderPane();
+        content.setCenter(terminalNode);
+        content.setBottom(actionRow(status, close));
+        BorderPane.setMargin(content.getBottom(), new Insets(10));
+        content.setPadding(new Insets(12));
+
+        Scene scene = new Scene(content, 1120, 720);
+        scene.getStylesheets().add(createInlineStylesheet());
+        addApplicationStylesheet(scene);
+        terminalStage.setScene(scene);
+        terminalStage.show();
+
+        AtomicReference<PtyProcess> processRef = new AtomicReference<>();
+        AtomicReference<JediTermWidget> widgetRef = new AtomicReference<>();
+        terminalStage.setOnCloseRequest(event -> {
+            JediTermWidget widget = widgetRef.get();
+            if (widget != null) {
+                SwingUtilities.invokeLater(widget::close);
+            }
+            PtyProcess process = processRef.get();
+            if (process != null && process.isAlive()) {
+                process.destroy();
+            }
+        });
+
+        SwingUtilities.invokeLater(() -> {
+            try {
+                List<String> command = new ArrayList<>();
+                command.add("docker");
+                command.addAll(launch.dockerArgs());
+                Map<String, String> environment = new HashMap<>(System.getenv());
+                environment.put("TERM", "xterm-256color");
+                PtyProcess process = new PtyProcessBuilder(command.toArray(String[]::new))
+                        .setEnvironment(environment)
+                        .setDirectory(launch.aiAgentPath().toString())
+                        .setInitialColumns(120)
+                        .setInitialRows(32)
+                        .setRedirectErrorStream(true)
+                        .setWindowsAnsiColorEnabled(true)
+                        .setUseWinConPty(true)
+                        .start();
+                processRef.set(process);
+
+                JediTermWidget widget = new JediTermWidget(120, 32, new DefaultSettingsProvider());
+                widget.setTtyConnector(new EmbeddedPtyTtyConnector(process, StandardCharsets.UTF_8, command));
+                widget.start();
+                widgetRef.set(widget);
+                terminalNode.setContent(widget.getComponent());
+                Platform.runLater(() -> {
+                    status.setText("Embedded Hermes CLI running in container: " + launch.containerName());
+                    appendHermesLog("Opened embedded Hermes CLI for container: " + launch.containerName());
+                    appendHermesLog("Embedded Hermes CLI command: " + String.join(" ", command));
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    status.setText("Embedded Hermes CLI failed");
+                    appendHermesLog("Embedded Hermes CLI failed: " + exceptionMessage(ex));
+                    showError("Embedded Hermes CLI Failed", ex);
+                });
+            }
+        });
+    }
+
     private void launchHermesAgentBrowser() {
         Task<Void> task = new Task<>() {
             @Override
@@ -10658,20 +10771,7 @@ public class ApiValidatorFxApp extends Application {
         Files.createDirectories(aiAgentPath);
         Path sessionDirectory = aiAgentPath.resolve("Sessions");
         Files.createDirectories(sessionDirectory);
-        String selectedSession = hermesSessionBox == null ? HERMES_NEW_SESSION : hermesSessionBox.getValue();
-        HermesSessionRecord selectedRecord = hermesSessionRecords.get(selectedSession);
-        List<String> dockerArgs = new ArrayList<>(List.of("exec", "-it",
-                "-w", "/opt/data",
-                "-e", "TERM=xterm-256color",
-                "-e", "AI_AGENT_PATH=/opt/data",
-                "-e", "TESTWEAVE_AI_AGENT_PATH=/opt/data",
-                containerName, "hermes"));
-        if ((hermesCommand == null || hermesCommand.isBlank()) && selectedRecord != null && !nullToBlank(selectedRecord.sessionId()).isBlank()) {
-            dockerArgs.add("--resume");
-            dockerArgs.add(selectedRecord.sessionId());
-        } else if (hermesCommand != null && !hermesCommand.isBlank()) {
-            dockerArgs.addAll(splitShellWords(hermesCommand));
-        }
+        List<String> dockerArgs = buildHermesDockerArgs(containerName, hermesCommand);
 
         String timestamp = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").format(java.time.LocalDateTime.now());
         Path transcriptPath = sessionDirectory.resolve("hermes-session-" + timestamp + ".log");
@@ -10688,6 +10788,24 @@ public class ApiValidatorFxApp extends Application {
         appendHermesLog("AI Agent output path: " + aiAgentPath);
         appendHermesLog("Hermes transcript path: " + transcriptPath);
         appendHermesLog("Hermes CLI command: docker " + String.join(" ", dockerArgs));
+    }
+
+    private List<String> buildHermesDockerArgs(String containerName, String hermesCommand) {
+        String selectedSession = hermesSessionBox == null ? HERMES_NEW_SESSION : hermesSessionBox.getValue();
+        HermesSessionRecord selectedRecord = hermesSessionRecords.get(selectedSession);
+        List<String> dockerArgs = new ArrayList<>(List.of("exec", "-it",
+                "-w", "/opt/data",
+                "-e", "TERM=xterm-256color",
+                "-e", "AI_AGENT_PATH=/opt/data",
+                "-e", "TESTWEAVE_AI_AGENT_PATH=/opt/data",
+                containerName, "hermes"));
+        if ((hermesCommand == null || hermesCommand.isBlank()) && selectedRecord != null && !nullToBlank(selectedRecord.sessionId()).isBlank()) {
+            dockerArgs.add("--resume");
+            dockerArgs.add(selectedRecord.sessionId());
+        } else if (hermesCommand != null && !hermesCommand.isBlank()) {
+            dockerArgs.addAll(splitShellWords(hermesCommand));
+        }
+        return dockerArgs;
     }
 
     private String powerShellHermesScript(String containerName, Path aiAgentPath, Path transcriptPath, List<String> dockerArgs) {
@@ -13281,6 +13399,89 @@ public class ApiValidatorFxApp extends Application {
                 """.formatted(APP_BACKGROUND, TEXT_PRIMARY, TEXT_MUTED, PANEL_SURFACE, PANEL_BACKGROUND,
                 PANEL_BACKGROUND, PANEL_SURFACE, APP_BACKGROUND, APP_BACKGROUND, PANEL_SURFACE,
                 APP_BACKGROUND).replace("\n", "%0A").replace(" ", "%20").replace("#", "%23");
+    }
+
+    private record EmbeddedHermesLaunch(String containerName, Path aiAgentPath, List<String> dockerArgs) {
+    }
+
+    private static class EmbeddedPtyTtyConnector implements TtyConnector {
+        private final PtyProcess process;
+        private final Reader reader;
+        private final java.io.OutputStream outputStream;
+        private final java.nio.charset.Charset charset;
+        private final List<String> command;
+
+        EmbeddedPtyTtyConnector(PtyProcess process, java.nio.charset.Charset charset, List<String> command) {
+            this.process = process;
+            this.charset = charset;
+            this.command = command == null ? List.of() : List.copyOf(command);
+            this.reader = new InputStreamReader(process.getInputStream(), charset);
+            this.outputStream = process.getOutputStream();
+        }
+
+        @Override
+        public int read(char[] buffer, int offset, int length) throws IOException {
+            return reader.read(buffer, offset, length);
+        }
+
+        @Override
+        public void write(byte[] bytes) throws IOException {
+            outputStream.write(bytes);
+            outputStream.flush();
+        }
+
+        @Override
+        public void write(String string) throws IOException {
+            write((string == null ? "" : string).getBytes(charset));
+        }
+
+        @Override
+        public boolean isConnected() {
+            return process.isAlive();
+        }
+
+        @Override
+        public void resize(TermSize termSize) {
+            if (termSize == null) {
+                return;
+            }
+            process.setWinSize(new WinSize(termSize.getColumns(), termSize.getRows()));
+        }
+
+        @Override
+        public int waitFor() throws InterruptedException {
+            return process.waitFor();
+        }
+
+        @Override
+        public boolean ready() throws IOException {
+            return reader.ready();
+        }
+
+        @Override
+        public String getName() {
+            return command.isEmpty() ? "Hermes CLI" : String.join(" ", command);
+        }
+
+        @Override
+        public void close() {
+            try {
+                reader.close();
+            } catch (Exception ignored) {
+            }
+            try {
+                outputStream.close();
+            } catch (Exception ignored) {
+            }
+            if (process.isAlive()) {
+                process.destroy();
+            }
+        }
+
+        @Override
+        public boolean init(Questioner questioner) {
+            return true;
+        }
     }
 
     public static void main(String[] args) {

@@ -19,8 +19,11 @@ ui\ApiValidatorFxApp$35.class
 model\DbValidationResult.class
 ui\ApiValidatorFxApp$25.class
 ui\ApiValidatorFxApp$PostmanCollectionRunResult.class
+ui\ApiValidatorFxApp$EmbeddedHermesLaunch.class
 service\DbValidationService.class
+ui\ApiValidatorFxApp$40.class
 ui\ApiValidatorFxApp$20.class
+ui\ApiValidatorFxApp$EmbeddedPtyTtyConnector.class
 ui\ApiValidatorFxApp$37.class
 ui\ApiValidatorFxApp$17.class
 ui\ApiValidatorFxApp$TestSuiteStepResult.class
